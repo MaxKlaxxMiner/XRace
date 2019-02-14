@@ -3,11 +3,14 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 #endregion
@@ -47,44 +50,41 @@ namespace XRace
       g.DrawEllipse(p, -800, -800, 1600, 1600);
 
       pictureBox1.Refresh();
-
-      fpsCount++;
-      if (tickTime > fpsTick)
-      {
-        Text = tickCount.ToString("N0") + ", fps: " + fpsCount;
-        fpsTick += 1000;
-        fpsCount = 0;
-      }
     }
 
-    int tickCount = 0;
-    int fpsTick = Environment.TickCount;
     int fpsCount = 0;
     int grad = 0;
     void Rechne()
     {
-      tickCount++;
       grad++;
       if (grad >= 3600) grad -= 3600;
     }
 
     bool innerTimer = false;
-    int tickTime = Environment.TickCount;
+    long nextTick = Stopwatch.GetTimestamp();
+    long waitTick = Stopwatch.Frequency / 60;
 
     private void timer1_Tick(object sender, EventArgs e)
     {
       if (innerTimer) return;
       innerTimer = true;
 
-      int tim = Environment.TickCount;
-      while (tim > tickTime)
+      for (; ; )
       {
-        if (tickTime + 1000 < tim) tickTime = tim;
-        Rechne();
-        tickTime++;
+        if (Stopwatch.GetTimestamp() > nextTick)
+        {
+          for (int i = 0; i < 16; i++) Rechne();
+          Zeichne();
+          Application.DoEvents();
+          nextTick += waitTick;
+          while (Stopwatch.GetTimestamp() > nextTick)
+          {
+          for (int i = 0; i < 16; i++) Rechne();
+          nextTick += waitTick;
+          }
+        }
+        Thread.Sleep(0);
       }
-
-      Zeichne();
 
       innerTimer = false;
     }
