@@ -35,20 +35,37 @@ namespace XRace
       g.Clear(Color.Black);
       g.SmoothingMode = SmoothingMode.HighQuality;
 
-      int w = bild.Width;
-      int h = bild.Height;
+      float scale = Math.Min(bild.Width, bild.Height) / 2f / 1000f;
+      g.TranslateTransform(bild.Width / 2f, bild.Height / 2f);
+      g.ScaleTransform(scale, -scale);
+      var p = new Pen(Color.LightBlue, 2f / scale);
 
-      g.DrawLine(new Pen(Color.LightBlue), 0, 0, w, h);
+      g.DrawLine(p, (int)(Math.Sin(Math.PI / 1800.0 * grad) * 900),
+                    (int)(Math.Cos(Math.PI / 1800.0 * grad) * 900),
+                    (int)(Math.Sin(Math.PI / 1800.0 * (grad + 1800)) * 900),
+                    (int)(Math.Cos(Math.PI / 1800.0 * (grad + 1800)) * 900));
+      g.DrawEllipse(p, -800, -800, 1600, 1600);
 
       pictureBox1.Refresh();
 
-      Text = tickCount.ToString("N0");
+      fpsCount++;
+      if (tickTime > fpsTick)
+      {
+        Text = tickCount.ToString("N0") + ", fps: " + fpsCount;
+        fpsTick += 1000;
+        fpsCount = 0;
+      }
     }
 
     int tickCount = 0;
+    int fpsTick = Environment.TickCount;
+    int fpsCount = 0;
+    int grad = 0;
     void Rechne()
     {
       tickCount++;
+      grad++;
+      if (grad >= 3600) grad -= 3600;
     }
 
     bool innerTimer = false;
@@ -64,7 +81,7 @@ namespace XRace
       {
         if (tickTime + 1000 < tim) tickTime = tim;
         Rechne();
-        tickTime += 10;
+        tickTime++;
       }
 
       Zeichne();
