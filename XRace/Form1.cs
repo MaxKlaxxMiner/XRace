@@ -60,33 +60,49 @@ namespace XRace
       if (grad >= 3600) grad -= 3600;
     }
 
+    bool closing = false;
     bool innerTimer = false;
     long nextTick = Stopwatch.GetTimestamp();
     long waitTick = Stopwatch.Frequency / 60;
+    int sleepWait = 1;
 
     private void timer1_Tick(object sender, EventArgs e)
     {
-      if (innerTimer) return;
+      if (innerTimer || closing) return;
       innerTimer = true;
-
+      Thread.CurrentThread.Priority = ThreadPriority.Highest;
       for (; ; )
       {
-        if (Stopwatch.GetTimestamp() > nextTick)
+        long tick = Stopwatch.GetTimestamp();
+        if (tick > nextTick)
         {
+          while (tick > nextTick + waitTick)
+          {
+            for (int i = 0; i < 16; i++) Rechne();
+            nextTick += waitTick;
+          }
           for (int i = 0; i < 16; i++) Rechne();
           Zeichne();
           Application.DoEvents();
           nextTick += waitTick;
-          while (Stopwatch.GetTimestamp() > nextTick)
-          {
-          for (int i = 0; i < 16; i++) Rechne();
-          nextTick += waitTick;
-          }
         }
-        Thread.Sleep(0);
+        Thread.Sleep(sleepWait);
+        if (closing) return;
       }
+    }
 
-      innerTimer = false;
+    private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+    {
+      closing = true;
+    }
+
+    private void Form1_KeyUp(object sender, KeyEventArgs e)
+    {
+      if (e.KeyCode == Keys.F12)
+      {
+        sleepWait = sleepWait == 0 ? 1 : 0;
+        Text = "Wait: " + sleepWait;
+      }
     }
   }
 }

@@ -58,6 +58,8 @@
       this.MinimumSize = new System.Drawing.Size(200, 160);
       this.Name = "Form1";
       this.Text = "XRace";
+      this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
+      this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.Form1_KeyUp);
       ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
       this.ResumeLayout(false);
 
