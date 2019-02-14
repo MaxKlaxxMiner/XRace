@@ -21,10 +21,6 @@ namespace XRace
       InitializeComponent();
     }
 
-    void Rechne()
-    {
-    }
-
     Bitmap bild;
 
     void Zeichne()
@@ -45,14 +41,31 @@ namespace XRace
       g.DrawLine(new Pen(Color.LightBlue), 0, 0, w, h);
 
       pictureBox1.Refresh();
+
+      Text = tickCount.ToString("N0");
+    }
+
+    int tickCount = 0;
+    void Rechne()
+    {
+      tickCount++;
     }
 
     bool innerTimer = false;
+    int tickTime = Environment.TickCount;
 
     private void timer1_Tick(object sender, EventArgs e)
     {
       if (innerTimer) return;
       innerTimer = true;
+
+      int tim = Environment.TickCount;
+      while (tim > tickTime)
+      {
+        if (tickTime + 1000 < tim) tickTime = tim;
+        Rechne();
+        tickTime += 10;
+      }
 
       Zeichne();
 
