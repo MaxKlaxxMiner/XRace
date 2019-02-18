@@ -81,10 +81,7 @@ namespace XRace
 
     void Rechne()
     {
-      if (pressedKeys.Contains(Keys.A)) game.player.posX -= 1;
-      if (pressedKeys.Contains(Keys.D)) game.player.posX += 1;
-      if (pressedKeys.Contains(Keys.W)) game.player.posY += 1;
-      if (pressedKeys.Contains(Keys.S)) game.player.posY -= 1;
+      game.player.Calc(pressedKeys.Contains(Keys.A), pressedKeys.Contains(Keys.D), pressedKeys.Contains(Keys.W), pressedKeys.Contains(Keys.S));
     }
 
     bool closing = false;
