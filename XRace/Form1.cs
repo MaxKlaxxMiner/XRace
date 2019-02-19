@@ -64,30 +64,55 @@ namespace XRace
       g.TranslateTransform(bild.Width / 2f, bild.Height / 2f);
       g.ScaleTransform(scale, -scale);
       var p = new Pen(Color.LightBlue, 2f / scale);
+      var pg = new Pen(Color.FromArgb(0x222222 - 16777216), 2f / scale);
+      var ph = new Pen(Color.FromArgb(0x444444 - 16777216), 2f / scale);
 
-      g.DrawLine(p, (float)game.player.posX - 20f, (float)game.player.posY - 20f, (float)game.player.posX + 20f, (float)game.player.posY + 20f);
-      g.DrawLine(p, (float)game.player.posX - 20f, (float)game.player.posY + 20f, (float)game.player.posX + 20f, (float)game.player.posY - 20f);
+      const double Vol = 100.0;
+      const double R15 = Math.PI / 12.0;
+      var pl = game.player;
 
-      //g.DrawLine(p, (int)(Math.Sin(Math.PI / 1800.0 * grad) * 900),
-      //              (int)(Math.Cos(Math.PI / 1800.0 * grad) * 900),
-      //              (int)(Math.Sin(Math.PI / 1800.0 * (grad + 1800)) * 900),
-      //              (int)(Math.Cos(Math.PI / 1800.0 * (grad + 1800)) * 900));
-      //g.DrawEllipse(p, -800, -800, 1600, 1600);
+      // --- Debug-Lines ---
+      g.DrawLine(pg,
+        (float)(Math.Sin(pl.posR) * 3000.0 + pl.pos.x), (float)(Math.Cos(pl.posR) * 3000.0 + pl.pos.y),
+        (float)(Math.Sin(pl.posR + R15 * 12) * 3000.0 + pl.pos.x), (float)(Math.Cos(pl.posR + R15 * 12) * 3000.0 + pl.pos.y));
+      g.DrawLine(pg,
+        (float)(Math.Sin(pl.posR - R15 * 6) * 3000.0 + pl.pos.x), (float)(Math.Cos(pl.posR - R15 * 6) * 3000.0 + pl.pos.y),
+        (float)(Math.Sin(pl.posR + R15 * 6) * 3000.0 + pl.pos.x), (float)(Math.Cos(pl.posR + R15 * 6) * 3000.0 + pl.pos.y));
+      // --- Debug-Arrows ---
+      g.DrawLine(ph,
+        (float)(pl.pos.x - pl.mov.x * 1000.0), (float)(pl.pos.y - pl.mov.y * 1000.0),
+        (float)(pl.pos.x + pl.mov.x * 1000.0), (float)(pl.pos.y + pl.mov.y * 1000.0));
+
+
+      // --- Player Ship ---
+      var ptl = new PointF((float)(Math.Sin(pl.posR - R15) * Vol + pl.pos.x), (float)(Math.Cos(pl.posR - R15) * Vol + pl.pos.y));
+      var ptr = new PointF((float)(Math.Sin(pl.posR + R15) * Vol + pl.pos.x), (float)(Math.Cos(pl.posR + R15) * Vol + pl.pos.y));
+      var pbl = new PointF((float)(Math.Sin(pl.posR - R15 * 9) * Vol + pl.pos.x), (float)(Math.Cos(pl.posR - R15 * 9) * Vol + pl.pos.y));
+      var pbr = new PointF((float)(Math.Sin(pl.posR + R15 * 9) * Vol + pl.pos.x), (float)(Math.Cos(pl.posR + R15 * 9) * Vol + pl.pos.y));
+      g.DrawLine(p, ptl, ptr);
+      g.DrawLine(p, ptr, pbr);
+      g.DrawLine(p, pbr, pbl);
+      g.DrawLine(p, pbl, ptl);
 
       pictureBox1.Refresh();
     }
 
-    int fpsCount = 0;
-
     void Rechne()
     {
-      game.player.Calc(pressedKeys.Contains(Keys.A), pressedKeys.Contains(Keys.D), pressedKeys.Contains(Keys.W), pressedKeys.Contains(Keys.S));
+      game.player.Calc(
+        pressedKeys.Contains(Keys.A), // left
+        pressedKeys.Contains(Keys.D), // right
+        pressedKeys.Contains(Keys.W), // up
+        pressedKeys.Contains(Keys.S), // down
+        pressedKeys.Contains(Keys.Q), // rotate left
+        pressedKeys.Contains(Keys.E)  // rotate right
+      );
     }
 
-    bool closing = false;
-    bool innerTimer = false;
+    bool closing;
+    bool innerTimer;
     long nextTick = Stopwatch.GetTimestamp();
-    long waitTick = Stopwatch.Frequency / 60;
+    readonly long waitTick = Stopwatch.Frequency / 60;
     int sleepWait = 1;
 
     private void timer1_Tick(object sender, EventArgs e)
@@ -129,6 +154,7 @@ namespace XRace
     private void Form1_KeyDown(object sender, KeyEventArgs e)
     {
       pressedKeys.Add(e.KeyCode);
+      if (e.KeyCode == Keys.Escape) Close();
     }
 
     private void Form1_KeyUp(object sender, KeyEventArgs e)
