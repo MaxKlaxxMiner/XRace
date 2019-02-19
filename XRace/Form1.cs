@@ -56,13 +56,13 @@ namespace XRace
         pictureBox1.Image = bild;
       }
 
+      float scale = Math.Min(bild.Width, bild.Height) / 2f / 1000f;
       var g = Graphics.FromImage(bild);
       g.Clear(Color.Black);
       g.SmoothingMode = SmoothingMode.HighQuality;
-
-      float scale = Math.Min(bild.Width, bild.Height) / 2f / 1000f;
       g.TranslateTransform(bild.Width / 2f, bild.Height / 2f);
       g.ScaleTransform(scale, -scale);
+
       var p = new Pen(Color.LightBlue, 2f / scale);
       var pg = new Pen(Color.FromArgb(0x222222 - 16777216), 2f / scale);
       var ph = new Pen(Color.FromArgb(0x444444 - 16777216), 2f / scale);
@@ -72,27 +72,18 @@ namespace XRace
       var pl = game.player;
 
       // --- Debug-Lines ---
-      g.DrawLine(pg,
-        (float)(Math.Sin(pl.posR) * 3000.0 + pl.pos.x), (float)(Math.Cos(pl.posR) * 3000.0 + pl.pos.y),
-        (float)(Math.Sin(pl.posR + R15 * 12) * 3000.0 + pl.pos.x), (float)(Math.Cos(pl.posR + R15 * 12) * 3000.0 + pl.pos.y));
-      g.DrawLine(pg,
-        (float)(Math.Sin(pl.posR - R15 * 6) * 3000.0 + pl.pos.x), (float)(Math.Cos(pl.posR - R15 * 6) * 3000.0 + pl.pos.y),
-        (float)(Math.Sin(pl.posR + R15 * 6) * 3000.0 + pl.pos.x), (float)(Math.Cos(pl.posR + R15 * 6) * 3000.0 + pl.pos.y));
-      // --- Debug-Arrows ---
-      g.DrawLine(ph,
-        (float)(pl.pos.x - pl.mov.x * 1000.0), (float)(pl.pos.y - pl.mov.y * 1000.0),
-        (float)(pl.pos.x + pl.mov.x * 1000.0), (float)(pl.pos.y + pl.mov.y * 1000.0));
+      g.DrawLine(pg, pl.pos.PlusRad(pl.posR, 3000), pl.pos.MinusRad(pl.posR, 3000));
+      g.DrawLine(pg, pl.pos.PlusRad(pl.posR + R15 * 6, 3000), pl.pos.MinusRad(pl.posR + R15 * 6, 3000));
 
+      // --- Debug-Arrows ---
+      g.DrawLine(ph, pl.pos.Plus(pl.mov.Mul(1000)), pl.pos);
 
       // --- Player Ship ---
-      var ptl = new PointF((float)(Math.Sin(pl.posR - R15) * Vol + pl.pos.x), (float)(Math.Cos(pl.posR - R15) * Vol + pl.pos.y));
-      var ptr = new PointF((float)(Math.Sin(pl.posR + R15) * Vol + pl.pos.x), (float)(Math.Cos(pl.posR + R15) * Vol + pl.pos.y));
-      var pbl = new PointF((float)(Math.Sin(pl.posR - R15 * 9) * Vol + pl.pos.x), (float)(Math.Cos(pl.posR - R15 * 9) * Vol + pl.pos.y));
-      var pbr = new PointF((float)(Math.Sin(pl.posR + R15 * 9) * Vol + pl.pos.x), (float)(Math.Cos(pl.posR + R15 * 9) * Vol + pl.pos.y));
-      g.DrawLine(p, ptl, ptr);
-      g.DrawLine(p, ptr, pbr);
-      g.DrawLine(p, pbr, pbl);
-      g.DrawLine(p, pbl, ptl);
+      var ptl = pl.pos.PlusRad(pl.posR - R15, Vol).ToP();
+      var ptr = pl.pos.PlusRad(pl.posR + R15, Vol).ToP();
+      var pbl = pl.pos.PlusRad(pl.posR - R15 * 9, Vol).ToP();
+      var pbr = pl.pos.PlusRad(pl.posR + R15 * 9, Vol).ToP();
+      g.DrawPolygon(p, new[] { ptl, ptr, pbr, pbl });
 
       pictureBox1.Refresh();
     }

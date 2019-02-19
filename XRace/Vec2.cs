@@ -20,7 +20,7 @@ namespace XRace
       this.y = y;
     }
 
-    public Vec2 Times(double k)
+    public Vec2 Mul(double k)
     {
       return new Vec2(x * k, y * k);
     }
@@ -69,12 +69,22 @@ namespace XRace
     {
       double mag = Mag();
       double div = (mag == 0.0) ? double.PositiveInfinity : 1.0 / mag;
-      return Times(div);
+      return Mul(div);
     }
 
     public PointF ToP()
     {
       return new PointF((float)x, (float)y);
+    }
+
+    public static implicit operator PointF(Vec2 v)
+    {
+      return v.ToP();
+    }
+
+    public static implicit operator Vec2(PointF v)
+    {
+      return new Vec2(v.X, v.Y);
     }
   }
 }
