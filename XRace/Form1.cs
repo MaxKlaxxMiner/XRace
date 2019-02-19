@@ -65,18 +65,43 @@ namespace XRace
 
       var p = new Pen(Color.LightBlue, 2f / scale);
       var pg = new Pen(Color.FromArgb(0x222222 - 16777216), 2f / scale);
-      var ph = new Pen(Color.FromArgb(0x444444 - 16777216), 2f / scale);
+      var ph = new Pen(Color.FromArgb(0x555555 - 16777216), 2f / scale);
 
       const double Vol = 100.0;
       const double R15 = Math.PI / 12.0;
       var pl = game.player;
 
-      // --- Debug-Lines ---
-      g.DrawLine(pg, pl.pos.PlusRad(pl.posR, 3000), pl.pos.MinusRad(pl.posR, 3000));
-      g.DrawLine(pg, pl.pos.PlusRad(pl.posR + R15 * 6, 3000), pl.pos.MinusRad(pl.posR + R15 * 6, 3000));
+      // --- Debug-Ratation ---
+      g.DrawLine(pg, pl.pos.PlusRad(pl.posR, 30000), pl.pos.MinusRad(pl.posR, 30000));
+      g.DrawLine(pg, pl.pos.PlusRad(pl.posR + R15 * 6, 30000), pl.pos.MinusRad(pl.posR + R15 * 6, 30000));
+      for (int r = 0; r < 1000; r += 50)
+      {
+        g.DrawLine(pg, pl.pos.PlusRad(pl.posR + pl.movR * r, 300), pl.pos.PlusRad(pl.posR + pl.movR * (r + 50), 300));
+      }
+      if (pl.movR < 0)
+      {
+        g.DrawLine(ph, pl.pos.PlusRad(pl.posR + pl.movR * 790, 300 + pl.movR * 20000), pl.pos.PlusRad(pl.posR + pl.movR * 1000, 300));
+        g.DrawLine(ph, pl.pos.PlusRad(pl.posR + pl.movR * 810, 300 - pl.movR * 20000), pl.pos.PlusRad(pl.posR + pl.movR * 1000, 300));
+      }
+      else
+      {
+        g.DrawLine(ph, pl.pos.PlusRad(pl.posR + pl.movR * 810, 300 + pl.movR * 20000), pl.pos.PlusRad(pl.posR + pl.movR * 1000, 300));
+        g.DrawLine(ph, pl.pos.PlusRad(pl.posR + pl.movR * 790, 300 - pl.movR * 20000), pl.pos.PlusRad(pl.posR + pl.movR * 1000, 300));
+      }
 
-      // --- Debug-Arrows ---
-      g.DrawLine(ph, pl.pos.Plus(pl.mov.Mul(1000)), pl.pos);
+      // --- Debug-Speed ---
+      double speed = pl.mov.Mag() * 500;
+      if (speed >= 1)
+      {
+        double r = pl.mov.Rad();
+        var pdir = pl.pos.PlusRad(r, speed);
+        var pdir2 = pl.pos.PlusRad(r + Math.PI, speed * 0.7);
+        g.DrawLine(pg, pdir, pdir2);
+        g.DrawLine(ph, pdir, pl.pos.PlusRad(r - R15, speed * 0.7));
+        g.DrawLine(ph, pdir, pl.pos.PlusRad(r + R15, speed * 0.7));
+        g.DrawLine(ph, pdir2, pl.pos.PlusRad(r - R15 * 0.7 + Math.PI, speed));
+        g.DrawLine(ph, pdir2, pl.pos.PlusRad(r + R15 * 0.7 + Math.PI, speed));
+      }
 
       // --- Player Ship ---
       var ptl = pl.pos.PlusRad(pl.posR - R15, Vol).ToP();
@@ -90,14 +115,12 @@ namespace XRace
 
     void Rechne()
     {
-      game.player.Calc(
-        pressedKeys.Contains(Keys.A), // left
-        pressedKeys.Contains(Keys.D), // right
-        pressedKeys.Contains(Keys.W), // up
-        pressedKeys.Contains(Keys.S), // down
-        pressedKeys.Contains(Keys.Q), // rotate left
-        pressedKeys.Contains(Keys.E)  // rotate right
-      );
+      game.player.Calc((pressedKeys.Contains(Keys.Q) ? -1 : 0) + // left
+                       (pressedKeys.Contains(Keys.E) ? +1 : 0),  // right
+                       (pressedKeys.Contains(Keys.W) ? +1 : 0) + // up
+                       (pressedKeys.Contains(Keys.S) ? -1 : 0),  // down
+                       (pressedKeys.Contains(Keys.A) ? -1 : 0) + // rotate left
+                       (pressedKeys.Contains(Keys.D) ? +1 : 0)); // rotate right
     }
 
     bool closing;

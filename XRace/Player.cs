@@ -23,31 +23,53 @@ namespace XRace
     /// </summary>
     public double movR;
 
+    /// <summary>
+    /// letzte links/rechts Steuerung (-1 bis 1)
+    /// </summary>
+    public double lrLast;
+    /// <summary>
+    /// letzte oben/unten Steuerung (1 bis -1)
+    /// </summary>
+    public double udLast;
+    /// <summary>
+    /// letzte links/rechts Drehung (-1 bis 1)
+    /// </summary>
+    public double rtLast;
 
+    /// <summary>
+    /// max. Seitwärtsbeschleunigung
+    /// </summary>
     const double AccS = 0.0001;
-    const double AccU = 0.0003;
-    const double AccD = 0.0002;
-    const double RotL = 0.000002;
-    const double RotR = 0.000002;
+    /// <summary>
+    /// max. Vorwärtsbeschleunigung
+    /// </summary>
+    const double AccU = 0.0005;
+    /// <summary>
+    /// max. Rückwärtsbremsung
+    /// </summary>
+    const double AccD = 0.0003;
+    /// <summary>
+    /// max. Rotationsbeschleunigung
+    /// </summary>
+    const double RotS = 0.000002;
 
     /// <summary>
     /// berechnet ein Tick des Spielers
     /// </summary>
-    /// <param name="ml">nach links bewegen</param>
-    /// <param name="mr">nach rechts bewegen</param>
-    /// <param name="mu">nach oben bewegen</param>
-    /// <param name="md">nach unten bewegen</param>
-    /// <param name="rl">nach links drehen</param>
-    /// <param name="rr">nach rechts drehen</param>
-    public void Calc(bool ml, bool mr, bool mu, bool md, bool rl, bool rr)
+    /// <param name="lr">links/rechts bewegen (-1 bis 1)</param>
+    /// <param name="ud">oben/unten bewegen (1 bis -1)</param>
+    /// <param name="rt">links/rechts rotieren (-1 bis 1)</param>
+    public void Calc(double lr, double ud, double rt)
     {
-      if (ml) mov = mov.PlusRad(posR - Math.PI / 2, AccS);
-      if (mr) mov = mov.PlusRad(posR + Math.PI / 2, AccS);
-      if (mu) mov = mov.PlusRad(posR, AccU);
-      if (md) mov = mov.MinusRad(posR, AccD);
+      if (lr < -1) lr = -1; else if (lr > 1) lr = 1; lrLast = lr;
+      if (ud < -1) ud = -1; else if (ud > 1) ud = 1; udLast = ud;
+      if (rt < -1) rt = -1; else if (rt > 1) rt = 1; rtLast = rt;
 
-      if (rl) movR -= RotL;
-      if (rr) movR += RotR;
+      mov = mov.PlusRad(posR + Math.PI / 2, lr * AccS);
+      mov = ud > 0 ? mov.PlusRad(posR, ud * AccU) : mov.PlusRad(posR, ud * AccD);
+
+      movR += rt * RotS;
+
       if (movR < -Math.PI) movR += Math.PI * 2;
       if (movR > Math.PI) movR -= Math.PI * 2;
 

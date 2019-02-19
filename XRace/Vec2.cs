@@ -72,6 +72,11 @@ namespace XRace
       return Mul(div);
     }
 
+    public double Rad()
+    {
+      return Math.Atan2(x, y);
+    }
+
     public PointF ToP()
     {
       return new PointF((float)x, (float)y);
