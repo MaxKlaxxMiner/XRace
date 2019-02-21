@@ -47,6 +47,8 @@ namespace XRace
     Bitmap bild;
 
     readonly Game game = new Game();
+    readonly Random rnd = new Random();
+
 
     void Zeichne()
     {
@@ -62,10 +64,12 @@ namespace XRace
       g.SmoothingMode = SmoothingMode.HighQuality;
       g.TranslateTransform(bild.Width / 2f, bild.Height / 2f);
       g.ScaleTransform(scale, -scale);
+      var penSize = 2f / scale;
 
-      var p = new Pen(Color.LightBlue, 2f / scale);
-      var pg = new Pen(Color.FromArgb(0x222222 - 16777216), 2f / scale);
-      var ph = new Pen(Color.FromArgb(0x555555 - 16777216), 2f / scale);
+      var p = new Pen(Color.LightBlue, penSize);
+      var pg = new Pen(Color.FromArgb(0x222222 - 16777216), penSize);
+      var ph = new Pen(Color.FromArgb(0x555555 - 16777216), penSize);
+      var pr = new Pen(Color.OrangeRed, penSize);
 
       const double Vol = 100.0;
       const double R15 = Math.PI / 12.0;
@@ -108,6 +112,20 @@ namespace XRace
       var ptr = pl.pos.PlusRad(pl.posR + R15, Vol).ToP();
       var pbl = pl.pos.PlusRad(pl.posR - R15 * 9, Vol).ToP();
       var pbr = pl.pos.PlusRad(pl.posR + R15 * 9, Vol).ToP();
+
+      double boost = (0.5+0.5*rnd.NextDouble()) * pl.udLast;
+      var pthr1 = pl.pos.PlusRad(pl.posR - R15 * 10, Vol * 0.8 + boost * Vol * 0.7).ToP();
+      var pthr2 = pl.pos.PlusRad(pl.posR - R15 * 11, Vol * 0.74 + boost * Vol * 0.2).ToP();
+      var pthr3 = pl.pos.PlusRad(pl.posR - R15 * 12, Vol * 0.7 + boost * Vol).ToP();
+      var pthr4 = pl.pos.PlusRad(pl.posR + R15 * 11, Vol * 0.74 + boost * Vol * 0.2).ToP();
+      var pthr5 = pl.pos.PlusRad(pl.posR + R15 * 10, Vol * 0.8 + boost * Vol * 0.7).ToP();
+      g.DrawLine(pr, pbl, pthr1);
+      g.DrawLine(pr, pthr1, pthr2);
+      g.DrawLine(pr, pthr2, pthr3);
+      g.DrawLine(pr, pthr3, pthr4);
+      g.DrawLine(pr, pthr4, pthr5);
+      g.DrawLine(pr, pthr5, pbr);
+
       g.DrawPolygon(p, new[] { ptl, ptr, pbr, pbl });
 
       pictureBox1.Refresh();
