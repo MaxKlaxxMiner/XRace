@@ -141,12 +141,21 @@ namespace XRace
 
     void Rechne()
     {
+      int rotate = (pressedKeys.Contains(Keys.A) ? -1 : 0) + // rotate left
+                   (pressedKeys.Contains(Keys.D) ? +1 : 0);  // rotate right
+
+      // auto-rotation
+      if (rotate == 0)
+      {
+        if (game.player.movR < 0) rotate = 1;
+        if (game.player.movR > 0) rotate = -1;
+      }
+
       game.player.Calc((pressedKeys.Contains(Keys.Q) ? -1 : 0) + // left
                        (pressedKeys.Contains(Keys.E) ? +1 : 0),  // right
                        (pressedKeys.Contains(Keys.W) ? +1 : 0) + // up
                        (pressedKeys.Contains(Keys.S) ? -1 : 0),  // down
-                       (pressedKeys.Contains(Keys.A) ? -1 : 0) + // rotate left
-                       (pressedKeys.Contains(Keys.D) ? +1 : 0)); // rotate right
+                       rotate);
     }
 
     bool closing;
