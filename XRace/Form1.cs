@@ -1,4 +1,5 @@
 ﻿#region # using *.*
+// ReSharper disable RedundantUsingDirective
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -25,23 +26,21 @@ namespace XRace
       InitializeComponent();
     }
 
-    #region # public static extern void timeBeginPeriod(int tick); // ermöglicht eine Verringerung der Wartephasen zwischen den Windows-Ticks (eine Erhöhung ist nicht möglich und wird ignoriert)
+    #region # timeBeginPeriod / timeEndPeriod
     /// <summary>
     /// ermöglicht eine Verringerung der Wartephasen zwischen den Windows-Ticks (eine Erhöhung ist nicht möglich und wird ignoriert)
     /// </summary>
     /// <param name="tick">Wartezeit in Millisekunden</param>
     [DllImport("winmm.dll", SetLastError = true)]
     [DebuggerHidden]
-    public static extern void timeBeginPeriod(int tick);
-    #endregion
-    #region # public static extern void timeEndPeriod(int tick); // hebt die Wartezeit von timeBeginPeriod() wieder auf
+    static extern void timeBeginPeriod(int tick);
     /// <summary>
     /// hebt die Wartezeit von timeBeginPeriod() wieder auf
     /// </summary>
     /// <param name="tick">Wartezeit in Millisekunden</param>
     [DllImport("winmm.dll", SetLastError = true)]
     [DebuggerHidden]
-    public static extern void timeEndPeriod(int tick);
+    static extern void timeEndPeriod(int tick);
     #endregion
 
     Bitmap bild;
@@ -49,11 +48,11 @@ namespace XRace
     readonly Game game = new Game();
     readonly Random rnd = new Random();
 
-
     void Zeichne()
     {
       if (bild == null || bild.Width != pictureBox1.Width || bild.Height != pictureBox1.Height)
       {
+        if (pictureBox1.Width * pictureBox1.Height == 0) return;
         bild = new Bitmap(pictureBox1.Width, pictureBox1.Height, PixelFormat.Format32bppRgb);
         pictureBox1.Image = bild;
       }
@@ -69,7 +68,7 @@ namespace XRace
       var p = new Pen(Color.LightBlue, penSize);
       var pg = new Pen(Color.FromArgb(0x222222 - 16777216), penSize);
       var ph = new Pen(Color.FromArgb(0x555555 - 16777216), penSize);
-      var pr = new Pen(Color.OrangeRed, penSize);
+      var pr = new Pen(Color.FromArgb(0x0080ff - 16777216), penSize);
 
       const double Vol = 100.0;
       const double R15 = Math.PI / 12.0;
@@ -107,13 +106,22 @@ namespace XRace
         g.DrawLine(ph, pdir2, pl.pos.PlusRad(r + R15 * 0.7 + Math.PI, speed));
       }
 
+      // --- Troll-Face ---
+      //var m = g.Transform;
+      //g.TranslateTransform((float)pl.pos.x, (float)pl.pos.y);
+      //g.RotateTransform((float)(pl.posR / Math.PI * -180));
+      //g.TranslateTransform(-128f * 2, 117f * 2 - 300);
+      //g.ScaleTransform(2f, -2f);
+      //g.DrawImage(troll, 0, 0);
+      //g.Transform = m;
+
       // --- Player Ship ---
       var ptl = pl.pos.PlusRad(pl.posR - R15, Vol).ToP();
       var ptr = pl.pos.PlusRad(pl.posR + R15, Vol).ToP();
       var pbl = pl.pos.PlusRad(pl.posR - R15 * 9, Vol).ToP();
       var pbr = pl.pos.PlusRad(pl.posR + R15 * 9, Vol).ToP();
 
-      double boost = (0.5+0.5*rnd.NextDouble()) * pl.udLast;
+      double boost = (0.5 + 0.5 * rnd.NextDouble()) * pl.udLast;
       var pthr1 = pl.pos.PlusRad(pl.posR - R15 * 10, Vol * 0.8 + boost * Vol * 0.7).ToP();
       var pthr2 = pl.pos.PlusRad(pl.posR - R15 * 11, Vol * 0.74 + boost * Vol * 0.2).ToP();
       var pthr3 = pl.pos.PlusRad(pl.posR - R15 * 12, Vol * 0.7 + boost * Vol).ToP();
@@ -149,7 +157,8 @@ namespace XRace
 
     private void timer1_Tick(object sender, EventArgs e)
     {
-      timeBeginPeriod(1);
+      try { timeBeginPeriod(1); }
+      catch { }
 
       if (innerTimer || closing) return;
       innerTimer = true;
@@ -159,12 +168,13 @@ namespace XRace
         long tick = Stopwatch.GetTimestamp();
         if (tick > nextTick)
         {
+          int ti = pressedKeys.Contains(Keys.F) ? 160 : 16;
           while (tick > nextTick + waitTick)
           {
-            for (int i = 0; i < 16; i++) Rechne();
+            for (int i = 0; i < ti; i++) Rechne();
             nextTick += waitTick;
           }
-          for (int i = 0; i < 16; i++) Rechne();
+          for (int i = 0; i < ti; i++) Rechne();
           Zeichne();
           Text = string.Join(", ", pressedKeys);
           Application.DoEvents();
@@ -178,10 +188,11 @@ namespace XRace
     private void Form1_FormClosing(object sender, FormClosingEventArgs e)
     {
       closing = true;
-      timeEndPeriod(1);
+      try { timeEndPeriod(1); }
+      catch { }
     }
 
-    HashSet<Keys> pressedKeys = new HashSet<Keys>();
+    readonly HashSet<Keys> pressedKeys = new HashSet<Keys>();
 
     private void Form1_KeyDown(object sender, KeyEventArgs e)
     {
