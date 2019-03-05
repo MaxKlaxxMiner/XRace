@@ -134,6 +134,11 @@ namespace XRace
       g.DrawLine(pr, pthr4, pthr5);
       g.DrawLine(pr, pthr5, pbr);
 
+      double drift = (0.5 + 0.5 * rnd.NextDouble()) * pl.lrLast;
+      var pdr1 = pl.pos.PlusRad(pl.posR + R15 * 6, drift * Vol * 0.5).ToP();
+      g.DrawLine(pr, pl.pos.PlusRad(pl.posR, Vol * 0.5), pdr1);
+      g.DrawLine(pr, pl.pos.PlusRad(pl.posR + R15 * 12, Vol * 0.2), pdr1);
+
       g.DrawPolygon(p, new[] { ptl, ptr, pbr, pbl });
 
       pictureBox1.Refresh();
@@ -151,8 +156,12 @@ namespace XRace
         if (game.player.movR > 0) rotate = -1;
       }
 
-      game.player.Calc((pressedKeys.Contains(Keys.Q) ? -1 : 0) + // left
-                       (pressedKeys.Contains(Keys.E) ? +1 : 0),  // right
+      int drift = (pressedKeys.Contains(Keys.Q) ? -1 : 0) + // left
+                  (pressedKeys.Contains(Keys.E) ? +1 : 0);  // right
+
+
+
+      game.player.Calc(drift,
                        (pressedKeys.Contains(Keys.W) ? +1 : 0) + // up
                        (pressedKeys.Contains(Keys.S) ? -1 : 0),  // down
                        rotate);
