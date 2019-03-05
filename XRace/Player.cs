@@ -39,7 +39,7 @@ namespace XRace
     /// <summary>
     /// max. Seitwärtsbeschleunigung
     /// </summary>
-    const double AccS = 0.0001;
+    const double AccS = 0.0002;
     /// <summary>
     /// max. Vorwärtsbeschleunigung
     /// </summary>

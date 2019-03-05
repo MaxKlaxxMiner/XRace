@@ -156,11 +156,18 @@ namespace XRace
         if (game.player.movR > 0) rotate = -1;
       }
 
-      int drift = (pressedKeys.Contains(Keys.Q) ? -1 : 0) + // left
-                  (pressedKeys.Contains(Keys.E) ? +1 : 0);  // right
+      double drift = (pressedKeys.Contains(Keys.Q) ? -1 : 0) + // left
+                     (pressedKeys.Contains(Keys.E) ? +1 : 0);  // right
 
-
-
+      if (drift == 0)
+      {
+        var d = game.player.mov.Mag();
+        if (d > 0.00001)
+        {
+          var v = new Vec2().PlusRad(game.player.mov.Rad() - game.player.posR, game.player.mov.Mag());
+          drift = v.x * -1000.0;
+        }
+      }
       game.player.Calc(drift,
                        (pressedKeys.Contains(Keys.W) ? +1 : 0) + // up
                        (pressedKeys.Contains(Keys.S) ? -1 : 0),  // down
@@ -194,7 +201,7 @@ namespace XRace
           }
           for (int i = 0; i < ti; i++) Rechne();
           Zeichne();
-          Text = string.Join(", ", pressedKeys);
+          //Text = string.Join(", ", pressedKeys);
           Application.DoEvents();
           nextTick += waitTick;
         }

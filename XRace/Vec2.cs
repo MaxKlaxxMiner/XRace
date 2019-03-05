@@ -3,6 +3,7 @@
 // ReSharper disable UnusedMember.Global
 using System;
 using System.Drawing;
+using System.Globalization;
 
 namespace XRace
 {
@@ -90,6 +91,11 @@ namespace XRace
     public static implicit operator Vec2(PointF v)
     {
       return new Vec2(v.X, v.Y);
+    }
+
+    public override string ToString()
+    {
+      return (new { x = x.ToString("N5",CultureInfo.InvariantCulture), y = y.ToString("N5",CultureInfo.InvariantCulture) }).ToString();
     }
   }
 }
