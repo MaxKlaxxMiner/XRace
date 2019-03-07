@@ -48,6 +48,9 @@ namespace XRace
     readonly Game game = new Game();
     readonly Random rnd = new Random();
 
+    readonly Vec2 autoStart = new Vec2(-1100, -900);
+    readonly Vec2 autoEnd = new Vec2(-300, 700);
+
     void Zeichne()
     {
       if (bild == null || bild.Width != pictureBox1.Width || bild.Height != pictureBox1.Height)
@@ -141,37 +144,59 @@ namespace XRace
 
       g.DrawPolygon(p, new[] { ptl, ptr, pbr, pbl });
 
+      // --- Autopilot Line ---
+      g.DrawLine(p, autoStart, autoEnd);
+
       pictureBox1.Refresh();
     }
 
     void Rechne()
     {
-      int rotate = (pressedKeys.Contains(Keys.A) ? -1 : 0) + // rotate left
-                   (pressedKeys.Contains(Keys.D) ? +1 : 0);  // rotate right
-
-      // auto-rotation
-      if (rotate == 0)
+      if (pressedKeys.Contains(Keys.Return)) // Autopilot active?
       {
-        if (game.player.movR < 0) rotate = 1;
-        if (game.player.movR > 0) rotate = -1;
+        double drift = 0.0;
+        double acc = 0.0;
+        double rotate = 0.0;
+
+        var dirCurrent = new Vec2().PlusRad(game.player.posR, 1);
+        var radCurrent = dirCurrent.Rad();
+        var radLast = new Vec2().PlusRad(game.player.posR - game.player.movR, 1).Rad();
+        var dirTarget = autoEnd.Minus(autoStart).Norm();
+        var radTarget = dirTarget.Rad();
+        Text = dirTarget + " (" + (180.0 / Math.PI * radTarget).ToString("N2") + ") / " + dirCurrent + " (" + (180.0 / Math.PI * radCurrent).ToString("N2") + ")";
+        rotate = (radTarget - radCurrent - (radCurrent - radLast) * 550) * 1000;
+
+        game.player.Calc(drift, acc, rotate);
       }
-
-      double drift = (pressedKeys.Contains(Keys.Q) ? -1 : 0) + // left
-                     (pressedKeys.Contains(Keys.E) ? +1 : 0);  // right
-
-      if (drift == 0)
+      else
       {
-        var d = game.player.mov.Mag();
-        if (d > 0.00001)
+        int rotate = (pressedKeys.Contains(Keys.A) ? -1 : 0) + // rotate left
+                     (pressedKeys.Contains(Keys.D) ? +1 : 0);  // rotate right
+
+        // auto-rotation
+        if (rotate == 0)
         {
-          var v = new Vec2().PlusRad(game.player.mov.Rad() - game.player.posR, game.player.mov.Mag());
-          drift = v.x * -1000.0;
+          if (game.player.movR < 0) rotate = 1;
+          if (game.player.movR > 0) rotate = -1;
         }
+
+        double drift = (pressedKeys.Contains(Keys.Q) ? -1 : 0) + // left
+                       (pressedKeys.Contains(Keys.E) ? +1 : 0);  // right
+
+        if (drift == 0)
+        {
+          var d = game.player.mov.Mag();
+          if (d > 0.00001)
+          {
+            var v = new Vec2().PlusRad(game.player.mov.Rad() - game.player.posR, game.player.mov.Mag());
+            drift = v.x * -1000.0;
+          }
+        }
+        game.player.Calc(drift,
+                         (pressedKeys.Contains(Keys.W) ? +1 : 0) + // up
+                         (pressedKeys.Contains(Keys.S) ? -1 : 0),  // down
+                         rotate);
       }
-      game.player.Calc(drift,
-                       (pressedKeys.Contains(Keys.W) ? +1 : 0) + // up
-                       (pressedKeys.Contains(Keys.S) ? -1 : 0),  // down
-                       rotate);
     }
 
     bool closing;
