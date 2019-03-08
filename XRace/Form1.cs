@@ -171,7 +171,7 @@ namespace XRace
 
         drift = dirCurrent.Cross(game.player.pos.Plus(game.player.mov.Mul(1000)).Minus(autoStart));
 
-        double dist = Math.Abs(dirCurrent.Cross(game.player.pos.Minus(autoStart))) + 70;
+        double dist = Math.Abs(dirCurrent.Cross(game.player.pos.Minus(autoStart))) + 70 + Math.Abs(game.player.movR * 100000.0);
 
         var virLanding = autoStart.Plus(dirTarget.Mul(dist));
         acc = new Vec2().PlusRad(game.player.posR - Math.PI / 2, 1).Cross(game.player.pos.Plus(game.player.mov.Mul(1000)).Minus(virLanding));
