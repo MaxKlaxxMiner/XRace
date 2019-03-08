@@ -118,6 +118,13 @@ namespace XRace
       //g.DrawImage(troll, 0, 0);
       //g.Transform = m;
 
+      // --- Autopilot Lines ---
+      g.DrawLine(p, autoStart, autoEnd);
+      var dir = autoEnd.Minus(autoStart).Norm();
+      double dist = pl.pos.Minus(autoStart).Cross(dir);
+      var pp2 = pl.pos.PlusRad(autoEnd.Minus(autoStart).Rad() - R15 * 6, dist);
+      g.DrawLine(p, pl.pos, pp2);
+
       // --- Player Ship ---
       var ptl = pl.pos.PlusRad(pl.posR - R15, Vol).ToP();
       var ptr = pl.pos.PlusRad(pl.posR + R15, Vol).ToP();
@@ -144,9 +151,6 @@ namespace XRace
 
       g.DrawPolygon(p, new[] { ptl, ptr, pbr, pbl });
 
-      // --- Autopilot Line ---
-      g.DrawLine(p, autoStart, autoEnd);
-
       pictureBox1.Refresh();
     }
 
@@ -163,8 +167,14 @@ namespace XRace
         var radLast = new Vec2().PlusRad(game.player.posR - game.player.movR, 1).Rad();
         var dirTarget = autoEnd.Minus(autoStart).Norm();
         var radTarget = dirTarget.Rad();
-        Text = dirTarget + " (" + (180.0 / Math.PI * radTarget).ToString("N2") + ") / " + dirCurrent + " (" + (180.0 / Math.PI * radCurrent).ToString("N2") + ")";
-        rotate = (radTarget - radCurrent - (radCurrent - radLast) * 550) * 1000;
+        rotate = (radTarget - radCurrent - (radCurrent - radLast) * 1000) * 1000;
+
+        drift = dirCurrent.Cross(game.player.pos.Plus(game.player.mov.Mul(1000)).Minus(autoStart));
+
+        double dist = Math.Abs(dirCurrent.Cross(game.player.pos.Minus(autoStart))) + 70;
+
+        var virLanding = autoStart.Plus(dirTarget.Mul(dist));
+        acc = new Vec2().PlusRad(game.player.posR - Math.PI / 2, 1).Cross(game.player.pos.Plus(game.player.mov.Mul(1000)).Minus(virLanding));
 
         game.player.Calc(drift, acc, rotate);
       }
@@ -188,7 +198,7 @@ namespace XRace
           var d = game.player.mov.Mag();
           if (d > 0.00001)
           {
-            var v = new Vec2().PlusRad(game.player.mov.Rad() - game.player.posR, game.player.mov.Mag());
+            var v = new Vec2().PlusRad(game.player.mov.Rad() - game.player.posR, d);
             drift = v.x * -1000.0;
           }
         }

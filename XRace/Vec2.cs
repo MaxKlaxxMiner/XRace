@@ -61,6 +61,11 @@ namespace XRace
       return x * v.x + y * v.y;
     }
 
+    public double Cross(Vec2 v)
+    {
+      return x * v.y - y * v.x;
+    }
+
     public double Mag()
     {
       return Math.Sqrt(x * x + y * y);
