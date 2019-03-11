@@ -156,25 +156,34 @@ namespace XRace
 
     void Rechne()
     {
+      var pl = game.player;
+
+      double len = new Vec2().PlusRad(pl.posR, 1).Cross(pl.pos.Minus(autoStart));
+      Text = len.ToString("N5") + " - " + pl.mov.Mag().ToString("N5");
+
       if (pressedKeys.Contains(Keys.Return)) // Autopilot active?
       {
         double drift = 0.0;
         double acc = 0.0;
         double rotate = 0.0;
 
-        var dirCurrent = new Vec2().PlusRad(game.player.posR, 1);
+        var dirCurrent = new Vec2().PlusRad(pl.posR, 1);
         var radCurrent = dirCurrent.Rad();
-        var radLast = new Vec2().PlusRad(game.player.posR - game.player.movR, 1).Rad();
+        var radLast = new Vec2().PlusRad(pl.posR - pl.movR, 1).Rad();
         var dirTarget = autoEnd.Minus(autoStart).Norm();
         var radTarget = dirTarget.Rad();
         rotate = (radTarget - radCurrent - (radCurrent - radLast) * 1000) * 1000;
 
-        if (!pressedKeys.Contains(Keys.ShiftKey)) drift = dirCurrent.Cross(game.player.pos.Plus(game.player.mov.Mul(1000)).Minus(autoStart));
+        //if (!pressedKeys.Contains(Keys.ShiftKey)) drift = dirCurrent.Cross(pl.pos.Plus(pl.mov.Mul(1000)).Minus(autoStart));
+        //drift = dirCurrent.Cross(pl.pos.Plus(pl.mov.Mul(1000)).Minus(autoStart));
+        {
+          Text = len.ToString("N5") + " - " + pl.mov.Mag().ToString("N5");
+        }
 
         double dist = Math.Abs(dirCurrent.Cross(game.player.pos.Minus(autoStart))) + 70 + Math.Abs(game.player.movR * 100000.0);
 
         var virLanding = autoStart.Plus(dirTarget.Mul(dist));
-        if (!pressedKeys.Contains(Keys.ControlKey)) acc = new Vec2().PlusRad(game.player.posR - Math.PI / 2, 1).Cross(game.player.pos.Plus(game.player.mov.Mul(1000)).Minus(virLanding));
+        //if (!pressedKeys.Contains(Keys.ControlKey)) acc = new Vec2().PlusRad(game.player.posR - Math.PI / 2, 1).Cross(game.player.pos.Plus(game.player.mov.Mul(1000)).Minus(virLanding));
 
         game.player.Calc(drift, acc, rotate);
       }

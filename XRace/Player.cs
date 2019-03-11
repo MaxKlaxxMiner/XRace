@@ -39,19 +39,19 @@ namespace XRace
     /// <summary>
     /// max. Seitwärtsbeschleunigung
     /// </summary>
-    const double AccS = 0.0002;
+    public const double AccS = 0.0002;
     /// <summary>
     /// max. Vorwärtsbeschleunigung
     /// </summary>
-    const double AccU = 0.0005;
+    public const double AccU = 0.0005;
     /// <summary>
     /// max. Rückwärtsbremsung
     /// </summary>
-    const double AccD = 0.0003;
+    public const double AccD = 0.0003;
     /// <summary>
     /// max. Rotationsbeschleunigung
     /// </summary>
-    const double RotS = 0.000002;
+    public const double RotS = 0.000002;
 
     /// <summary>
     /// berechnet ein Tick des Spielers
