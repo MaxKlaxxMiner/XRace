@@ -158,8 +158,10 @@ namespace XRace
     {
       var pl = game.player;
 
-      double len = new Vec2().PlusRad(pl.posR, 1).Cross(pl.pos.Minus(autoStart));
-      Text = len.ToString("N5") + " - " + pl.mov.Mag().ToString("N5");
+      //double len = new Vec2().PlusRad(pl.posR, 1).Cross(pl.pos.Minus(autoStart));
+      //double spd = new Vec2().PlusRad(pl.posR, 1).Cross(pl.mov);
+      //double brk = (spd * spd) / (Player.AccS + Player.AccS - Player.AccS * 0.1);
+      //Text = len.ToString("N5") + " - " + spd.ToString("N5") + " - " + brk.ToString("N5");
 
       if (pressedKeys.Contains(Keys.Return)) // Autopilot active?
       {
@@ -174,16 +176,24 @@ namespace XRace
         var radTarget = dirTarget.Rad();
         rotate = (radTarget - radCurrent - (radCurrent - radLast) * 1000) * 1000;
 
-        //if (!pressedKeys.Contains(Keys.ShiftKey)) drift = dirCurrent.Cross(pl.pos.Plus(pl.mov.Mul(1000)).Minus(autoStart));
-        //drift = dirCurrent.Cross(pl.pos.Plus(pl.mov.Mul(1000)).Minus(autoStart));
+        double lenX = new Vec2().PlusRad(pl.posR, 1).Cross(pl.pos.Minus(autoStart));
+        if (!pressedKeys.Contains(Keys.ShiftKey))
         {
-          Text = len.ToString("N5") + " - " + pl.mov.Mag().ToString("N5");
+          double spd = new Vec2().PlusRad(pl.posR, 1).Cross(pl.mov);
+          double brk = (spd * spd) / (Player.AccS + Player.AccS - Player.AccS * 0.1);
+          if (lenX < -0.001 && spd < -Player.AccS) drift = -1;
+          else if (lenX > 0.001 && spd > Player.AccS) drift = +1;
+          else
+          {
+            drift = lenX * 0.1;
+            if (brk > Math.Abs(lenX)) drift = -drift;
+          }
         }
 
-        double dist = Math.Abs(dirCurrent.Cross(game.player.pos.Minus(autoStart))) + 70 + Math.Abs(game.player.movR * 100000.0);
+        double dist = Math.Abs(lenX * 0.3) + 70 + Math.Abs(pl.movR * 100000.0);
 
         var virLanding = autoStart.Plus(dirTarget.Mul(dist));
-        //if (!pressedKeys.Contains(Keys.ControlKey)) acc = new Vec2().PlusRad(game.player.posR - Math.PI / 2, 1).Cross(game.player.pos.Plus(game.player.mov.Mul(1000)).Minus(virLanding));
+        if (!pressedKeys.Contains(Keys.ControlKey)) acc = new Vec2().PlusRad(pl.posR - Math.PI / 2, 1).Cross(pl.pos.Plus(pl.mov.Mul(1000)).Minus(virLanding));
 
         game.player.Calc(drift, acc, rotate);
       }
