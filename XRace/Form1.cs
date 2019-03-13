@@ -158,11 +158,6 @@ namespace XRace
     {
       var pl = game.player;
 
-      //double len = new Vec2().PlusRad(pl.posR, 1).Cross(pl.pos.Minus(autoStart));
-      //double spd = new Vec2().PlusRad(pl.posR, 1).Cross(pl.mov);
-      //double brk = (spd * spd) / (Player.AccS + Player.AccS - Player.AccS * 0.1);
-      //Text = len.ToString("N5") + " - " + spd.ToString("N5") + " - " + brk.ToString("N5");
-
       if (pressedKeys.Contains(Keys.Return)) // Autopilot active?
       {
         double drift = 0.0;
@@ -190,10 +185,25 @@ namespace XRace
           }
         }
 
-        double dist = Math.Abs(lenX * 0.3) + 70 + Math.Abs(pl.movR * 100000.0);
 
-        var virLanding = autoStart.Plus(dirTarget.Mul(dist));
-        if (!pressedKeys.Contains(Keys.ControlKey)) acc = new Vec2().PlusRad(pl.posR - Math.PI / 2, 1).Cross(pl.pos.Plus(pl.mov.Mul(1000)).Minus(virLanding));
+        double lenY = new Vec2().PlusRad(pl.posR - Math.PI / 2, 1).Cross(pl.pos.Minus(autoStart))
+                      + Math.Abs(pl.movR * 100000.0) // Sicherheitsabstand bei unkontrollierten Drehungen
+                      + 75.0 // Extra Boden-Abstand
+                      + Math.Abs(lenX * 0.3); // Extra, wenn auch Seitenabstand zu hoch
+
+        if (!pressedKeys.Contains(Keys.ControlKey))
+        {
+          double spd = new Vec2().PlusRad(pl.posR - Math.PI / 2, 1).Cross(pl.mov);
+          double brk = (spd * spd) / (Player.AccU + Player.AccU - Player.AccU * 0.05);
+          Text = lenY.ToString("N5") + " - " + spd.ToString("N5") + " - " + brk.ToString("N5");
+          if (lenY < -0.001 && spd < -Player.AccD) acc = -1;
+          else if (lenY > 0.001 && spd > Player.AccD) acc = +1;
+          else
+          {
+            acc = lenY * 0.1;
+            if (brk > Math.Abs(lenY)) acc = -acc;
+          }
+        }
 
         game.player.Calc(drift, acc, rotate);
       }
