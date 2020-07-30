@@ -1,4 +1,5 @@
-/XRace/*.suo
-/XRace/*.user
-/XRace/bin
-/XRace/obj
+.vs
+bin
+obj
+*.suo
+*.user
